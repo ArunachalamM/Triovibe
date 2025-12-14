@@ -51,9 +51,16 @@
     --transition-slow: 500ms ease;
 
     /* Fonts */
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-nav: 'Comfortaa', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-nav: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Font Weights */
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --weight-extrabold: 800;
 }
 
 * {
@@ -69,6 +76,7 @@ html {
 
 body {
     font-family: var(--font-body);
+    font-weight: var(--weight-regular);
     color: var(--text-primary);
     background-color: var(--bg-primary);
     line-height: 1.6;
@@ -116,7 +124,7 @@ body {
 .nav-logo .logo-text {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -133,7 +141,7 @@ body {
 .nav-link {
     text-decoration: none;
     color: var(--text-primary);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     font-size: 0.95rem;
     position: relative;
     transition: color var(--transition-fast);
@@ -308,10 +316,11 @@ body {
 .hero-title {
     font-family: var(--font-heading);
     font-size: clamp(2.5rem, 8vw, 4.5rem);
-    font-weight: 700;
+    font-weight: var(--weight-extrabold);
     line-height: 1.1;
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
+    letter-spacing: -0.02em;
 }
 
 .title-line {
@@ -360,7 +369,7 @@ body {
 .btn {
     padding: 0.875rem 2rem;
     border-radius: var(--radius-lg);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     font-size: 1rem;
     text-decoration: none;
     display: inline-block;
@@ -368,6 +377,7 @@ body {
     border: 2px solid transparent;
     cursor: pointer;
     font-family: var(--font-body);
+    letter-spacing: 0.01em;
 }
 
 .btn-primary {
@@ -496,9 +506,10 @@ body {
 .section-title {
     font-family: var(--font-heading);
     font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .section-description {
@@ -565,7 +576,7 @@ body {
 .service-title {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
 }
@@ -700,7 +711,7 @@ body {
 .project-title {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin: var(--spacing-xs) 0 var(--spacing-sm);
     color: var(--text-primary);
 }
@@ -738,7 +749,7 @@ body {
 .contact-title {
     font-family: var(--font-heading);
     font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
 }
@@ -919,9 +930,9 @@ body {
 }
 
 .rf-brand-display {
-    font-family: var(--font-heading);
+    font-family: 'Comfortaa', var(--font-heading);
     font-size: clamp(1.5rem, 4vw, 2.5rem);
-    font-weight: 800;
+    font-weight: var(--weight-bold);
     line-height: 1;
     margin-bottom: var(--spacing-sm);
     background: linear-gradient(135deg, var(--rf-primary), var(--rf-primary-dark));
@@ -945,9 +956,11 @@ body {
 .rf-title {
     font-family: var(--font-heading);
     color: var(--text-primary);
-    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: var(--weight-bold);
     line-height: 1.1;
     margin-bottom: var(--spacing-md);
+    letter-spacing: -0.01em;
 }
 
 .rf-subtitle {
