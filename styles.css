@@ -1534,3 +1534,69 @@ textarea:focus-visible {
     width: 100%;
     text-align: center;
 }
+/* ============================================
+   Google Locations & Auth Styles
+   ============================================ */
+.locations-container {
+    margin-top: var(--spacing-lg);
+    width: 100%;
+    max-width: 400px;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.rf-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--rf-border);
+    border-radius: var(--radius-md);
+    background-color: white;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.25rem;
+    transition: all var(--transition-fast);
+}
+
+.rf-select:focus {
+    outline: none;
+    border-color: var(--rf-primary);
+    box-shadow: 0 0 0 3px rgba(62, 141, 227, 0.1);
+}
+
+.rf-loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--rf-primary);
+    font-weight: 500;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(62, 141, 227, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--rf-primary);
+    animation: spin 1s linear infinite;
+}
+
+.rf-error-message {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #DC2626;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

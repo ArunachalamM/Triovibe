@@ -1,61 +1,81 @@
-# TrioVibe - Creative Tech Team Website
+# TrioVibe - Creative Tech Solutions
 
 A modern, elegant, and responsive website showcasing TrioVibe's expertise in Micro SaaS applications, UX/UI solutions, and website development.
 
-## About
+![ReviewFlow Dashboard](assets/reviewflow-preview.png)
 
-TrioVibe is a business site for a small team offering Micro SaaS apps, UX/UI design, and websites.
+## 🚀 About
 
-## Features
+TrioVibe is a creative tech team offering innovative digital solutions including Micro SaaS apps, UX/UI design, and custom website development. Our flagship product, **ReviewFlow**, helps businesses manage and respond to customer reviews efficiently using AI-powered response generation.
 
-✨ **Modern Design**
+## 📦 Products
+
+### ReviewFlow - AI-Powered Review Management
+
+ReviewFlow transforms how businesses handle customer feedback:
+
+- **Smart Review Dashboard** - View and manage all customer reviews in one place
+- **AI Response Generation** - Generate professional, personalized responses with one click
+- **Review Filtering** - Filter by Unreplied, Replied, or view All reviews
+- **Rating Insights** - Visual star ratings for quick sentiment analysis
+- **Customer Details** - See reviewer type (Local Guide), dining preferences, and more
+
+## ✨ Features
+
+### Modern Design
 - Clean, minimal, and visually balanced layout
 - Soft shadows and rounded corners for a futuristic aesthetic
-- Light neutral color palette with vibrant accent colors
+- Professional color palette with vibrant accent colors
+- Montserrat headings & Poppins body text for premium typography
 
-🎨 **Micro-Animations & Interactions**
+### Micro-Animations & Interactions
 - Smooth scroll-triggered animations
 - Fluid transitions for hover effects
 - Parallax effects in the hero section
 - Gradient orbs with floating animations
 - Scroll indicator with bounce effect
 
-📱 **Fully Responsive**
+### Fully Responsive
 - Mobile-first approach
 - Adaptive layouts for all device sizes
 - Touch-friendly navigation
 - Optimized performance for fast load times
 
-🎯 **User Experience**
+### User Experience
 - Smooth scroll navigation
-- Interactive form with validation
+- Interactive forms with validation
 - Intersection Observer for efficient animations
 - Active section highlighting in navigation
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **HTML5** - Semantic markup
 - **CSS3** - Modern styling with custom properties (CSS variables)
 - **Vanilla JavaScript** - No dependencies, pure JavaScript for interactions
+- **Google Fonts** - Montserrat & Poppins for premium typography
 
-## Getting Started
+## 🏁 Getting Started
 
 1. Clone or download this repository
 2. Open `index.html` in your web browser
 3. That's it! No build process required.
 
-## File Structure
+## 📁 File Structure
 
 ```
 TrioVibe/
 │
-├── index.html      # Main HTML structure
-├── styles.css      # All styling and animations
-├── script.js       # Interactive features and animations
-└── README.md       # Documentation
+├── index.html          # Main TrioVibe landing page
+├── reviewflow.html     # ReviewFlow product page
+├── signin.html         # User sign in page
+├── signup.html         # User registration page
+├── styles.css          # All styling and animations
+├── script.js           # Interactive features and animations
+├── assets/             # Images, logos, and media files
+└── README.md           # Documentation
 ```
 
-## Customization
+## 🎨 Customization
 
 ### Colors
 
@@ -65,10 +85,16 @@ Edit the CSS variables in `styles.css` to customize the color scheme:
 :root {
     --primary-accent: #6366f1;      /* Main brand color */
     --secondary-accent: #8b5cf6;    /* Secondary accent */
-    --bg-primary: #ffffff;           /* Primary background */
+    --bg-primary: #ffffff;          /* Primary background */
     --text-primary: #1a1a1a;        /* Main text color */
 }
 ```
+
+### Typography
+
+The site uses Google Fonts:
+- **Montserrat** - Headings (bold, professional)
+- **Poppins** - Body text (clean, modern)
 
 ### Content
 
@@ -77,15 +103,16 @@ Edit the CSS variables in `styles.css` to customize the color scheme:
 - Modify contact information in the contact section
 - Update social media links and contact email
 
-### Typography
+## 📑 Pages
 
-The site uses Google Fonts:
-- **Inter** - Body text (clean, modern)
-- **Space Grotesk** - Headings (futuristic, bold)
+| Page | Description |
+|------|-------------|
+| `index.html` | Main TrioVibe landing page with services, projects, and contact |
+| `reviewflow.html` | ReviewFlow product showcase with features and CTAs |
+| `signin.html` | User authentication - sign in |
+| `signup.html` | User registration - create account |
 
-You can change these in the `<head>` section of `index.html`.
-
-## Sections
+## 🔑 Key Sections
 
 1. **Hero Section** - Eye-catching introduction with call-to-action buttons
 2. **Services** - Three service cards showcasing expertise
@@ -93,7 +120,7 @@ You can change these in the `<head>` section of `index.html`.
 4. **Contact** - Contact form and social links
 5. **Footer** - Additional navigation and copyright
 
-## Browser Support
+## 🌐 Browser Support
 
 - Chrome (latest)
 - Firefox (latest)
@@ -101,7 +128,7 @@ You can change these in the `<head>` section of `index.html`.
 - Edge (latest)
 - Mobile browsers (iOS Safari, Chrome Mobile)
 
-## Performance
+## ⚡ Performance
 
 - Lightweight (no external dependencies)
 - Optimized animations with GPU acceleration
@@ -109,17 +136,19 @@ You can change these in the `<head>` section of `index.html`.
 - Intersection Observer for lazy animations
 - Minified asset sizes
 
-## Future Enhancements
+## 🔮 Roadmap
 
-Potential additions for future versions:
-- Blog section
-- Portfolio case studies
-- Client testimonials
-- Live chat integration
-- CMS integration
-- Analytics tracking
+Upcoming features and enhancements:
 
-## License
+- [ ] ReviewFlow Dashboard Integration
+- [ ] Analytics & Insights Dashboard
+- [ ] Multi-platform Review Aggregation
+- [ ] Sentiment Analysis Reports
+- [ ] Team Collaboration Features
+- [ ] API Integrations
+- [ ] Mobile App
+
+## 📄 License
 
 This project is created for TrioVibe. Feel free to customize it for your own use.
 
