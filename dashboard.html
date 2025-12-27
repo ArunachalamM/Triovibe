@@ -11,6 +11,158 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <style>
+        .review-tabs {
+            display: flex;
+            gap: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 2rem;
+        }
+
+        .review-tab {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .review-tab.active {
+            color: #3b82f6;
+        }
+
+        .review-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3b82f6;
+        }
+
+        .review-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-info h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .reviewer-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .review-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .review-time {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .review-text {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .review-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .generate-response-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .generate-response-btn:hover {
+            background: #2563eb;
+        }
+
+        .generate-response-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .review-reply {
+            background: #f9fafb;
+            border-left: 3px solid #3b82f6;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+        }
+
+        .reply-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-sort-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-btn {
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #f9fafb;
+        }
+    </style>
 </head>
 
 <body class="dashboard-page" style="background-color: #f8fafc; min-height: 100vh;">
@@ -19,7 +171,8 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html" style="text-decoration: none;">
-                    <img src="assets/triovibe_logo.jpg" alt="ReviewFlow Logo" class="logo-image">
+                    <img src="assets/ReviewFlow_Logo.png" alt="ReviewFlow Logo" class="logo-image"
+                        style="height: 56px;">
                 </a>
             </div>
             <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
@@ -77,9 +230,28 @@
 
         <!-- Reviews Section (Initially Hidden) -->
         <div id="reviews-container" class="reviews-section" style="display: none; margin-top: 3rem;">
-            <h3 class="reviews-header"
-                style="font-family: 'Raleway', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem;">Customer Reviews
-            </h3>
+            <!-- Review Tabs -->
+            <div class="review-tabs">
+                <button class="review-tab active" data-filter="unreplied"
+                    onclick="filterReviews('unreplied')">Unreplied</button>
+                <button class="review-tab" data-filter="replied" onclick="filterReviews('replied')">Replied</button>
+                <button class="review-tab" data-filter="all" onclick="filterReviews('all')">All</button>
+            </div>
+
+            <!-- Filter and Sort Controls -->
+            <div class="filter-sort-controls">
+                <button class="control-btn" title="Filter">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 4h18M3 12h12M3 20h6" />
+                    </svg>
+                </button>
+                <button class="control-btn" title="Sort">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 4h18M3 12h15M3 20h9" />
+                    </svg>
+                </button>
+            </div>
+
             <div id="reviews-loading" class="rf-loading-spinner" style="display: none; margin: 20px 0;">
                 <div class="spinner"></div>
                 <span>Loading reviews...</span>
@@ -92,6 +264,123 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="google-signin.js"></script>
     <script src="script.js"></script>
+    <script>
+        let currentFilter = 'unreplied';
+        window.allReviews = []; // Use window.allReviews to share with google-signin.js
+
+        function filterReviews(filter) {
+            currentFilter = filter;
+
+            // Update active tab
+            document.querySelectorAll('.review-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.filter === filter) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Filter and display reviews
+            displayFilteredReviews();
+        }
+
+        function displayFilteredReviews() {
+            const list = document.getElementById('reviews-list');
+            if (!list) return;
+
+            let filteredReviews = window.allReviews;
+
+            if (currentFilter === 'unreplied') {
+                filteredReviews = window.allReviews.filter(r => !r.reviewReply);
+            } else if (currentFilter === 'replied') {
+                filteredReviews = window.allReviews.filter(r => r.reviewReply);
+            }
+
+            list.innerHTML = '';
+
+            if (filteredReviews.length === 0) {
+                list.innerHTML = '<div class="rf-error-message" style="background:var(--bg-secondary);color:var(--text-secondary);border:none;">No reviews found for this filter.</div>';
+                return;
+            }
+
+            filteredReviews.forEach(review => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+
+                // Star Rating Processing
+                const starRating = review.starRating;
+                let starsHtml = '';
+                const ratingMap = { 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5 };
+                const numStars = ratingMap[starRating] || 0;
+
+                for (let i = 0; i < 5; i++) {
+                    if (i < numStars) {
+                        starsHtml += `<svg width="20" height="20" fill="#fbbf24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+                    } else {
+                        starsHtml += `<svg width="20" height="20" fill="#e5e7eb" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+                    }
+                }
+
+                const dateStr = getRelativeTime(review.createTime);
+
+                card.innerHTML = `
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <h4>${review.reviewer.displayName}</h4>
+                            <div class="reviewer-meta">Local Guide</div>
+                        </div>
+                        <div class="review-rating">
+                            <div class="review-stars">${starsHtml}</div>
+                            <div class="review-time">${dateStr}</div>
+                        </div>
+                    </div>
+                    <div class="review-text">${review.comment || '(No comment provided)'}</div>
+                `;
+
+                // Check for reply
+                if (review.reviewReply) {
+                    const replyDiv = document.createElement('div');
+                    replyDiv.className = 'review-reply';
+                    replyDiv.innerHTML = `
+                        <div class="reply-label">Your Reply</div>
+                        <div>${review.reviewReply.comment}</div>
+                    `;
+                    card.appendChild(replyDiv);
+                } else {
+                    // Add Generate Response button
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'review-actions';
+                    actionsDiv.innerHTML = `
+                        <button class="generate-response-btn" onclick="generateResponse('${review.name}')">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate Response
+                        </button>
+                    `;
+                    card.appendChild(actionsDiv);
+                }
+
+                list.appendChild(card);
+            });
+        }
+
+        function getRelativeTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) return '1 day ago';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+            return date.toLocaleDateString();
+        }
+
+        function generateResponse(reviewName) {
+            // TODO: Implement AI response generation
+            alert('AI Response generation coming soon!');
+        }
+    </script>
 </body>
 
 </html>

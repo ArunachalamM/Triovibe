@@ -1,16 +1,14 @@
 console.log('google-signin.js loaded');
 
 // Google Identity Services Configuration
-const GOOGLE_CLIENT_ID = '37214632622-l5kh41kk01u3e4oom7mm2lbtsmvesbjb.apps.googleusercontent.com'; // Replace with your actual Client ID
-// const GOOGLE_API_KEY = 'AIzaSyCnXDCIinKriq2pFMX1rM9GG7_XwgfhWK8'; // Optional
+const GOOGLE_CLIENT_ID = '37214632622-l5kh41kk01u3e4oom7mm2lbtsmvesbjb.apps.googleusercontent.com';
 
 // Scopes required for Google Business Profile
-// https://www.googleapis.com/auth/business.manage
 const SCOPES = 'https://www.googleapis.com/auth/business.manage';
 
 let tokenClient;
 let accessToken = null;
-let currentAccountName = null; // Store the account name
+let currentAccountName = null;
 
 // Initialize the Google Identity Services Token Client
 function initGoogleAuth() {
@@ -22,10 +20,8 @@ function initGoogleAuth() {
                 console.log('Granted Scopes:', tokenResponse.scope);
                 accessToken = tokenResponse.access_token;
 
-                // Store token in Session Storage
                 sessionStorage.setItem('google_access_token', accessToken);
 
-                // Redirect to Dashboard if not already there
                 if (!window.location.pathname.includes('dashboard')) {
                     window.location.href = 'dashboard.html';
                 } else {
@@ -41,7 +37,6 @@ function initGoogleAuth() {
     });
 }
 
-// Trigger the Sign In flow
 function signInWithGoogle() {
     console.log('Sign In button clicked');
     if (!tokenClient) {
@@ -52,39 +47,32 @@ function signInWithGoogle() {
     tokenClient.requestAccessToken();
 }
 
-// Handle Sign Out
 function handleSignOut() {
     sessionStorage.removeItem('google_access_token');
     window.location.href = 'index.html';
 }
 
-// Check for existing session on load (for Dashboard)
 function checkSession() {
     const storedToken = sessionStorage.getItem('google_access_token');
 
-    // If we are on the dashboard
     if (window.location.pathname.includes('dashboard')) {
         if (storedToken) {
             accessToken = storedToken;
             handleAuthSuccess();
         } else {
-            // No token found, redirect to login/home
             console.warn('No session token found, redirecting to reviewflow...');
             window.location.href = 'reviewflow.html';
         }
     }
 }
 
-// Handle successful authentication
 async function handleAuthSuccess() {
     showLoadingState(true);
     try {
         const accounts = await fetchAccounts();
         if (accounts && accounts.length > 0) {
-            // For simplicity, we'll fetch locations for the first account found
-            // In a real app, you might let the user choose the account if there are multiple
-            const accountId = accounts[0].name; // Format: accounts/{accountId}
-            currentAccountName = accountId; // Store account ID
+            const accountId = accounts[0].name;
+            currentAccountName = accountId;
 
             const locations = await fetchLocations(accountId);
             displayLocations(locations);
@@ -103,7 +91,6 @@ async function handleAuthSuccess() {
     }
 }
 
-// Fetch Accounts from Google Business Profile API
 async function fetchAccounts() {
     const response = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
         headers: {
@@ -116,7 +103,6 @@ async function fetchAccounts() {
         const errorBody = await response.text();
         console.error('Accounts API Error Body:', errorBody);
 
-        // If 401 Unauthorized, token might be expired
         if (response.status === 401) {
             sessionStorage.removeItem('google_access_token');
             if (window.location.pathname.includes('dashboard')) {
@@ -132,12 +118,7 @@ async function fetchAccounts() {
     return data.accounts || [];
 }
 
-// Fetch Locations for a specific Account
 async function fetchLocations(accountName) {
-    // Note: The API endpoint for locations is under mybusinessbusinessinformation
-    // Endpoint: https://mybusinessbusinessinformation.googleapis.com/v1/{parent}/locations
-    // accountName is already in format "accounts/{id}"
-    // critical: readMask is often required to get fields
     const response = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title,storeCode`, {
         headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -153,7 +134,6 @@ async function fetchLocations(accountName) {
     return data.locations || [];
 }
 
-// Fetch Reviews for a specific Location
 async function fetchReviews(locationName) {
     showReviewsLoading(true);
     const reviewsContainer = document.getElementById('reviews-container');
@@ -161,15 +141,11 @@ async function fetchReviews(locationName) {
 
     try {
         let resourceName = locationName;
-        // Fix for v4 API: ensure resourceName starts with accounts/{id}/
         if (!resourceName.startsWith('accounts/') && currentAccountName) {
             resourceName = `${currentAccountName}/${locationName}`;
         }
         console.log(`Fetching reviews for: ${resourceName}`);
 
-        // Endpoint: https://mybusiness.googleapis.com/v4/{name}/reviews
-        // locationName is 'accounts/{accId}/locations/{locId}'
-        // NOTE: Ensure the 'Business Profile' API is enabled in GCP.
         const response = await fetch(`https://mybusiness.googleapis.com/v4/${resourceName}/reviews?pageSize=20`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -194,80 +170,24 @@ async function fetchReviews(locationName) {
     }
 }
 
-// UI Updates
 function showReviewsLoading(isLoading) {
     const loadingEl = document.getElementById('reviews-loading');
     if (loadingEl) loadingEl.style.display = isLoading ? 'flex' : 'none';
 }
 
 function displayReviews(reviews) {
-    const list = document.getElementById('reviews-list');
-    if (!list) return;
+    console.log('displayReviews called with', reviews.length, 'reviews');
+    // Store reviews globally for filtering
+    window.allReviews = reviews;
 
-    list.innerHTML = '';
-
-    if (reviews.length === 0) {
-        list.innerHTML = '<div class="rf-error-message" style="background:var(--bg-secondary);color:var(--text-secondary);border:none;">No reviews found for this location.</div>';
-        return;
+    // Use the displayFilteredReviews function from dashboard.html
+    if (typeof window.displayFilteredReviews === 'function') {
+        window.displayFilteredReviews();
+    } else {
+        console.error('displayFilteredReviews function not available');
     }
-
-    reviews.forEach(review => {
-        const card = document.createElement('div');
-        card.className = 'review-card';
-
-        // Star Rating Processing
-        const starRating = review.starRating;
-        let starsHtml = '';
-        const ratingMap = { 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5 };
-        const numStars = ratingMap[starRating] || 0;
-
-        for (let i = 0; i < 5; i++) {
-            if (i < numStars) {
-                starsHtml += `<svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
-            } else {
-                starsHtml += `<svg width="16" height="16" fill="#E5E7EB" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
-            }
-        }
-
-        const dateStr = new Date(review.createTime).toLocaleDateString();
-
-        card.innerHTML = `
-            <div class="review-header">
-                <div class="reviewer-name">${review.reviewer.displayName}</div>
-                <div class="review-time">${dateStr}</div>
-            </div>
-            <div class="review-stars" style="margin-bottom: 0.5rem;">${starsHtml}</div>
-            <div class="review-comment">${review.comment || '(No comment provided)'}</div>
-        `;
-
-        // Check for reply
-        if (review.reviewReply) {
-            const replyDiv = document.createElement('div');
-            replyDiv.className = 'review-reply';
-            replyDiv.innerHTML = `
-                <div class="reply-label">Your Reply</div>
-                <div class="review-comment">${review.reviewReply.comment}</div>
-            `;
-            card.appendChild(replyDiv);
-        } else {
-            // Add Reply Form
-            const replyForm = document.createElement('div');
-            replyForm.className = 'reply-form';
-            replyForm.innerHTML = `
-                <textarea class="reply-textarea" placeholder="Write a response..."></textarea>
-                <div class="reply-actions">
-                    <span class="reply-status"></span>
-                    <button class="btn btn-primary rf-btn-primary btn-sm" onclick="handleReplySubmit(this, '${review.name}')">Post Reply</button>
-                </div>
-            `;
-            card.appendChild(replyForm);
-        }
-
-        list.appendChild(card);
-    });
 }
 
-// Handle Reply Submission
 async function handleReplySubmit(btn, reviewName) {
     const form = btn.closest('.reply-form');
     const textarea = form.querySelector('.reply-textarea');
@@ -279,25 +199,18 @@ async function handleReplySubmit(btn, reviewName) {
         return;
     }
 
-    // UI Loading State
     btn.disabled = true;
     btn.textContent = 'Posting...';
     statusEl.textContent = '';
     statusEl.className = 'reply-status';
 
     try {
-        // Endpoint: https://mybusiness.googleapis.com/v4/{name}/reply
-        // reviewName is 'accounts/{acc}/locations/{loc}/reviews/{rev}'
         await postReply(reviewName, replyText);
 
-        // Success UI
         statusEl.textContent = 'Reply posted successfully!';
         statusEl.classList.add('success');
 
-        // Remove form and show static reply after a moment (optional, or just reload)
         setTimeout(() => {
-            // Reload reviews to show standard "Your Reply" view
-            // Or manipulate DOM to swap form for static view
             const card = form.parentElement;
             form.remove();
 
@@ -321,7 +234,7 @@ async function handleReplySubmit(btn, reviewName) {
 
 async function postReply(reviewName, comment) {
     const response = await fetch(`https://mybusiness.googleapis.com/v4/${reviewName}/reply`, {
-        method: 'PUT', // or POST, usually PUT for reply updates/creation
+        method: 'PUT',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
@@ -338,14 +251,12 @@ async function postReply(reviewName, comment) {
     return await response.json();
 }
 
-// UI Updates
 function showLoadingState(isLoading) {
     const container = document.getElementById('locations-container');
     const loadingEl = document.getElementById('locations-loading');
 
     if (isLoading) {
         if (loadingEl) loadingEl.style.display = 'flex';
-        // Dont hide container yet
     } else {
         if (loadingEl) loadingEl.style.display = 'none';
         if (container) container.style.display = 'block';
@@ -357,14 +268,13 @@ function displayLocations(locations) {
 
     if (!listContainer) return;
 
-    listContainer.innerHTML = ''; // Clear previous
+    listContainer.innerHTML = '';
 
     if (locations.length === 0) {
         showNoLocationsError();
         return;
     }
 
-    // Label
     const label = document.createElement('label');
     label.innerText = 'Select your business location:';
     label.className = 'rf-label';
@@ -376,13 +286,11 @@ function displayLocations(locations) {
     label.style.fontSize = '1.125rem';
     listContainer.appendChild(label);
 
-    // Create a container for the select to match the screenshot 'look' (optional wrapper)
     const selectWrapper = document.createElement('div');
     selectWrapper.style.position = 'relative';
 
-    // Create dropdown
     const select = document.createElement('select');
-    select.className = 'rf-select'; // styling class
+    select.className = 'rf-select';
     select.id = 'location-select';
     select.style.width = '100%';
     select.style.padding = '12px 16px';
@@ -393,7 +301,6 @@ function displayLocations(locations) {
     select.style.fontSize = '1rem';
     select.style.transition = 'all 0.2s';
 
-    // Default option
     const defaultOption = document.createElement('option');
     defaultOption.text = 'Select a location';
     defaultOption.disabled = true;
@@ -402,15 +309,14 @@ function displayLocations(locations) {
 
     locations.forEach(loc => {
         const option = document.createElement('option');
-        option.value = loc.name; // locations/{locationId}
-        option.text = loc.title + (loc.storeCode ? ` (${loc.storeCode})` : '') + ` (${loc.name.split('/').pop()})`; // Added ID hint for display if needed
+        option.value = loc.name;
+        option.text = loc.title + (loc.storeCode ? ` (${loc.storeCode})` : '') + ` (${loc.name.split('/').pop()})`;
         select.appendChild(option);
     });
 
     selectWrapper.appendChild(select);
     listContainer.appendChild(selectWrapper);
 
-    // Event Listener for selection
     select.addEventListener('change', (e) => {
         const locationName = e.target.value;
         if (locationName) {
@@ -439,13 +345,11 @@ function handleAuthError(message) {
     }
 }
 
-// Initialize on load
 function checkGoogleLibrary() {
     if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
         initGoogleAuth();
-        checkSession(); // Check for existing session on page load
+        checkSession();
     } else {
-        // Retry after a short delay if library not yet loaded
         setTimeout(checkGoogleLibrary, 100);
     }
 }
