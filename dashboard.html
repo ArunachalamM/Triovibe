@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ReviewFlow | TrioVibe</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="dashboard-page" style="background-color: #f8fafc; min-height: 100vh;">
+    <!-- Navigation -->
+    <nav class="navbar scrolled" id="navbar" style="position: sticky; top: 0;">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" style="text-decoration: none;">
+                    <img src="assets/triovibe_logo.jpg" alt="ReviewFlow Logo" class="logo-image">
+                </a>
+            </div>
+            <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
+                <div id="user-info" style="font-size: 0.875rem; color: var(--text-secondary);"></div>
+                <button onclick="handleSignOut()" class="btn" style="
+                    padding: 0.5rem 1rem; 
+                    border: 1px solid #fee2e2; 
+                    background: #fff;
+                    color: #ef4444;
+                    border-radius: 6px;
+                    font-size: 0.875rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                 " onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-container" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+
+        <!-- Welcome / Header -->
+        <header class="dashboard-header" style="margin-bottom: 3rem; text-align: center;">
+            <h1
+                style="font-family: 'Raleway', sans-serif; font-size: 2.5rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                Welcome to <span style="color: var(--rf-primary);">ReviewFlow</span>
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">Manage your customer reviews efficiently.</p>
+        </header>
+
+        <!-- Location Selection Card -->
+        <div class="location-selection-card" style="
+            background: white; 
+            border-radius: 16px; 
+            padding: 3rem; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+            max-width: 600px; 
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+        ">
+            <div id="locations-loading" class="rf-loading-spinner"
+                style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <div class="spinner"></div>
+                <span style="color: var(--text-secondary);">Loading your business profile...</span>
+            </div>
+
+            <div id="locations-container" style="display: none;">
+                <div id="locations-list">
+                    <!-- Dynamic Content will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section (Initially Hidden) -->
+        <div id="reviews-container" class="reviews-section" style="display: none; margin-top: 3rem;">
+            <h3 class="reviews-header"
+                style="font-family: 'Raleway', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem;">Customer Reviews
+            </h3>
+            <div id="reviews-loading" class="rf-loading-spinner" style="display: none; margin: 20px 0;">
+                <div class="spinner"></div>
+                <span>Loading reviews...</span>
+            </div>
+            <div id="reviews-list" class="reviews-grid"></div>
+        </div>
+
+    </main>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="google-signin.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

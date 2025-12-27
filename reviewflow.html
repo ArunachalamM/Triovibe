@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReviewFlow - AI Review Reply Assistant | TrioVibe</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="reviewflow-page">
+    <!-- Navigation -->
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" style="text-decoration: none;">
+                    <img src="assets/triovibe_logo.jpg" alt="ReviewFlow Logo" class="logo-image">
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#features" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="rf-hero">
+        <div class="container">
+            <div class="hero-content" style="margin: 0 auto;">
+                <div class="rf-brand-display">ReviewFlow</div>
+                <span class="rf-badge">AI Review Reply Assistant</span>
+                <h1 class="rf-title">Turn Customer Reviews<br>into Revenue</h1>
+                <p class="rf-subtitle">Respond to customer reviews efficiently with an AI-powered, context-aware reply
+                    workflow designed for small businesses.</p>
+                <div class="hero-buttons">
+                    <a href="signup.html" class="btn btn-primary rf-btn-primary">Get Started</a>
+                    <button onclick="signInWithGoogle()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Sign In with Google
+                    </button>
+                </div>
+                <div id="locations-container" class="locations-container" style="display: none;">
+                    <div id="locations-loading" class="rf-loading-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>Fetching locations...</span>
+                    </div>
+                    <div id="locations-list"></div>
+                </div>
+                
+                <div id="reviews-container" class="reviews-section" style="display: none;">
+                    <h3 class="reviews-header">Customer Reviews</h3>
+                    <div id="reviews-loading" class="rf-loading-spinner" style="display: none; margin: 20px 0;">
+                        <div class="spinner"></div>
+                        <span>Loading reviews...</span>
+                    </div>
+                    <div id="reviews-list" class="reviews-grid"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="rf-features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label" style="color: var(--rf-primary);">Features</span>
+                <h2 class="section-title">Everything you need to manage reviews</h2>
+                <p class="section-description">Powerful tools to maintain a 5-star reputation with minimal effort.</p>
+            </div>
+
+            <div class="services-grid">
+                <!-- Feature 1 -->
+                <div class="rf-feature-card" data-aos="fade-up">
+                    <div class="rf-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">AI Reply Generator</h3>
+                    <p class="service-description">Generate contextual, brand-aligned suggested replies instantly using
+                        advanced sentiment analysis.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="rf-feature-card" data-aos="fade-up" data-delay="100">
+                    <div class="rf-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Actionable Reminders</h3>
+                    <p class="service-description">Never miss a review with persistent notifications and "Respond Now"
+                        call-to-actions for unreplied reviews.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="rf-feature-card" data-aos="fade-up" data-delay="200">
+                    <div class="rf-icon-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Tone Selector</h3>
+                    <p class="service-description">Choose the perfect tone (Friendly, Formal, Empathetic) for every
+                        situation to match your brand voice.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="rf-pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label" style="color: var(--rf-primary);">Pricing</span>
+                <h2 class="section-title">Simple, transparent pricing</h2>
+                <p class="section-description">Choose the perfect plan for your business needs.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Starter Plan -->
+                <div class="pricing-card" data-aos="fade-up">
+                    <h3 class="plan-name">Starter</h3>
+                    <div class="plan-price">Free</div>
+                    <p class="plan-desc">Perfect for trying out ReviewFlow.</p>
+                    <ul class="plan-features">
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            50 AI Replies / mo
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Basic Tones
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Manual Posting
+                        </li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-secondary pricing-cta">Get Started Free</a>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="pricing-card popular" data-aos="fade-up" data-delay="100">
+                    <div class="popular-badge">Most Popular</div>
+                    <h3 class="plan-name">Pro</h3>
+                    <div class="plan-price">$29<span class="plan-period">/mo</span></div>
+                    <p class="plan-desc">For growing businesses needing efficiency.</p>
+                    <ul class="plan-features">
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Unlimited AI Replies
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            All Tone Styles
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Sentiment Analysis
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Priority Support
+                        </li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary pricing-cta rf-btn-primary">Start Free Trial</a>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="pricing-card" data-aos="fade-up" data-delay="200">
+                    <h3 class="plan-name">Agency</h3>
+                    <div class="plan-price">$99<span class="plan-period">/mo</span></div>
+                    <p class="plan-desc">For agencies managing multiple locations.</p>
+                    <ul class="plan-features">
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Everything in Pro
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Up to 10 Locations
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            Team Management
+                        </li>
+                        <li class="plan-feature-item">
+                            <svg class="plan-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            API Access
+                        </li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-secondary pricing-cta">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Prop Section -->
+    <section class="section" style="padding: var(--spacing-2xl) 0; background: white;">
+        <div class="container">
+            <div class="contact-wrapper" style="align-items: center;">
+                <div class="contact-info">
+                    <h2 class="section-title">Why choose ReviewFlow?</h2>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-icon" style="background: rgba(29, 191, 115, 0.1);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="color: var(--rf-success);">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Save Time</h4>
+                                <p>Reduce reply time by 80% with AI suggestions.</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon" style="background: rgba(62, 141, 227, 0.1);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="color: var(--rf-primary);">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Build Trust</h4>
+                                <p>Show customers you care with timely, personal responses.</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon" style="background: rgba(255, 183, 77, 0.1);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="color: var(--rf-accent);">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Boost Retention</h4>
+                                <p>Turn one-time visitors into loyal recurring customers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form visible"
+                    style="transform: none; opacity: 1; background: var(--rf-bg); border-color: transparent;">
+                    <!-- Placeholder for app screenshot or graphic -->
+                    <div style="text-align: center; padding: 2rem;">
+                        <h3 class="rf-title" style="font-size: 1.5rem; margin-bottom: 1rem;">Simple. Fast. Effective.
+                        </h3>
+                        <p style="margin-bottom: 2rem;">"As a small business owner, I want to quickly scan my reviews,
+                            select my tone, and post a reply — so I never miss an opportunity."</p>
+                        <a href="signup.html" class="btn btn-primary rf-btn-primary" style="width: 100%;">Get Started
+                            Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/triovibe_footer_logo.png" alt="TrioVibe Logo" class="logo-image">
+                    <p class="slogan">Imagine. <span style="color: #F27B35;">Innovate.</span> <span
+                            style="color: #A6D973;">Impact.</span></p>
+                    <p>Building digital experiences with innovation and precision.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="index.html#services">Services</a>
+                    <a href="reviewflow.html">ReviewFlow</a>
+                    <a href="index.html#contact">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TrioVibe. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="google-signin.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
