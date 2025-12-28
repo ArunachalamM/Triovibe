@@ -12,11 +12,65 @@
         href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
+        /* New Toolbar Styles */
+        .reviews-toolbar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 2rem;
+            padding-bottom: 0px;
+        }
+
         .review-tabs {
             display: flex;
             gap: 2rem;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .filter-sort-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 0;
+        }
+
+        /* Compact Mode Styles */
+        body.compact-ui .dashboard-header {
+            display: none !important;
+        }
+
+        body.compact-ui .location-selection-card {
+            display: none !important;
+        }
+
+        .compact-location-header {
+            display: none;
+            align-items: center;
+            gap: 1rem;
             margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        body.compact-ui .compact-location-header {
+            display: flex;
+        }
+
+        .compact-location-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        /* Ensure select looks good in compact mode */
+        .compact-location-header select.rf-select {
+            max-width: 400px;
+            padding: 8px 12px !important;
+            font-size: 0.875rem !important;
+            background-color: #f9fafb !important;
         }
 
         .review-tab {
@@ -29,22 +83,21 @@
             cursor: pointer;
             position: relative;
             transition: color 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
         }
 
         .review-tab.active {
             color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
         }
 
+        /* Remove old pseudo element if any */
         .review-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #3b82f6;
+            display: none;
         }
 
+        /* Existing Card Styles */
         .review-card {
             background: white;
             border: 1px solid #e5e7eb;
@@ -143,13 +196,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .filter-sort-controls {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
         .control-btn {
             padding: 0.5rem;
             background: white;
@@ -157,10 +203,15 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
         }
 
         .control-btn:hover {
             background: #f9fafb;
+            color: #111827;
         }
     </style>
 </head>
@@ -205,6 +256,14 @@
             <p style="color: var(--text-secondary); font-size: 1.1rem;">Manage your customer reviews efficiently.</p>
         </header>
 
+        <!-- Compact Location Header container -->
+        <div id="compact-location-header" class="compact-location-header">
+            <span class="compact-location-label">Business Location:</span>
+            <div id="compact-dropdown-container" style="flex-grow: 1; max-width: 400px;">
+                <!-- Dropdown will be moved here -->
+            </div>
+        </div>
+
         <!-- Location Selection Card -->
         <div class="location-selection-card" style="
             background: white; 
@@ -230,26 +289,32 @@
 
         <!-- Reviews Section (Initially Hidden) -->
         <div id="reviews-container" class="reviews-section" style="display: none; margin-top: 3rem;">
-            <!-- Review Tabs -->
-            <div class="review-tabs">
-                <button class="review-tab active" data-filter="unreplied"
-                    onclick="filterReviews('unreplied')">Unreplied</button>
-                <button class="review-tab" data-filter="replied" onclick="filterReviews('replied')">Replied</button>
-                <button class="review-tab" data-filter="all" onclick="filterReviews('all')">All</button>
-            </div>
 
-            <!-- Filter and Sort Controls -->
-            <div class="filter-sort-controls">
-                <button class="control-btn" title="Filter">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M3 4h18M3 12h12M3 20h6" />
-                    </svg>
-                </button>
-                <button class="control-btn" title="Sort">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M3 4h18M3 12h15M3 20h9" />
-                    </svg>
-                </button>
+            <!-- Combined Toolbar -->
+            <div class="reviews-toolbar-header">
+                <!-- Tabs -->
+                <div class="review-tabs">
+                    <button class="review-tab active" data-filter="unreplied"
+                        onclick="filterReviews('unreplied')">Unreplied</button>
+                    <button class="review-tab" data-filter="replied" onclick="filterReviews('replied')">Replied</button>
+                    <button class="review-tab" data-filter="all" onclick="filterReviews('all')">All</button>
+                </div>
+
+                <!-- Filter and Sort Controls -->
+                <div class="filter-sort-controls">
+                    <button class="control-btn" title="Filter">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M3 4h18M3 12h12M3 20h6" />
+                        </svg>
+                    </button>
+                    <button class="control-btn" title="Sort">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M3 4h18M3 12h15M3 20h9" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="reviews-loading" class="rf-loading-spinner" style="display: none; margin: 20px 0;">
@@ -268,6 +333,25 @@
         let currentFilter = 'unreplied';
         window.allReviews = []; // Use window.allReviews to share with google-signin.js
 
+        // Function to switch to compact mode
+        window.switchToCompactMode = function () {
+            document.body.classList.add('compact-ui');
+
+            const select = document.getElementById('location-select');
+            const compactContainer = document.getElementById('compact-dropdown-container');
+            const reviewsContainer = document.getElementById('reviews-container');
+
+            // Move select if it exists and hasn't been moved yet
+            if (select && compactContainer && select.parentElement.id !== 'compact-dropdown-container') {
+                compactContainer.appendChild(select);
+            }
+
+            // Adjust margin for reviews container since the big header is gone
+            if (reviewsContainer) {
+                reviewsContainer.style.marginTop = '0';
+            }
+        };
+
         function filterReviews(filter) {
             currentFilter = filter;
 
@@ -284,6 +368,11 @@
         }
 
         function displayFilteredReviews() {
+            // NEW: Switch to compact mode when reviews are displayed
+            if (typeof switchToCompactMode === 'function') {
+                switchToCompactMode();
+            }
+
             const list = document.getElementById('reviews-list');
             if (!list) return;
 
