@@ -679,7 +679,7 @@
                 })
                 .then(data => {
                     // Display generated response
-                    const generatedText = data.response || data.text || data.message || 'No response generated';
+                    const generatedText = data.reply || data.response || data.text || data.message || 'No response generated';
                     displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Short');
                 })
                 .catch(error => {
@@ -843,7 +843,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    const generatedText = data.response || data.text || data.message || 'No response generated';
+                    const generatedText = data.reply || data.response || data.text || data.message || 'No response generated';
                     displayGeneratedResponse(reviewName, generatedText, tone, length);
                 })
                 .catch(error => {
