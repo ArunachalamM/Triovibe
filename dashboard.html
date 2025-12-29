@@ -213,6 +213,172 @@
             background: #f9fafb;
             color: #111827;
         }
+
+        /* AI Response Generation Styles */
+        .response-generation-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .response-skeleton {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .skeleton-line {
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .tone-length-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .control-select {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .tone-tag,
+        .length-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .tone-tag {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .length-tag {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .response-text {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .response-text-editable {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .response-text-editable:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .response-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .response-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .response-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .response-btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .response-btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .response-btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .response-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .response-error-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 
@@ -392,8 +558,12 @@
             }
 
             filteredReviews.forEach(review => {
+                // Store review data for response generation
+                window.reviewDataMap.set(review.name, review);
+
                 const card = document.createElement('div');
                 card.className = 'review-card';
+                card.setAttribute('data-review-name', review.name);
 
                 // Star Rating Processing
                 const starRating = review.starRating;
@@ -465,9 +635,271 @@
             return date.toLocaleDateString();
         }
 
+
+        // Store review data for response generation
+        window.reviewDataMap = new Map();
+
         function generateResponse(reviewName) {
-            // TODO: Implement AI response generation
-            alert('AI Response generation coming soon!');
+            const reviewData = window.reviewDataMap.get(reviewName);
+            if (!reviewData) {
+                console.error('Review data not found for:', reviewName);
+                return;
+            }
+
+            // Show loading state
+            showResponseLoadingState(reviewName);
+
+            // Get current location name (from dropdown or stored)
+            const locationSelect = document.getElementById('location-select');
+            const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
+
+            // Prepare webhook payload
+            const payload = {
+                reviewText: reviewData.comment || '',
+                reviewerName: reviewData.reviewer.displayName,
+                starRating: reviewData.starRating,
+                businessLocation: businessLocation,
+                tone: 'Professional', // Default
+                length: 'Short' // Default
+            };
+
+            // Call n8n webhook
+            fetch('https://prabhu9801.app.n8n.cloud/webhook-test/AI Response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Display generated response
+                    const generatedText = data.response || data.text || data.message || 'No response generated';
+                    displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Short');
+                })
+                .catch(error => {
+                    console.error('Error generating response:', error);
+                    showResponseError(reviewName, error.message);
+                });
+        }
+
+        function showResponseLoadingState(reviewName) {
+            const reviewCard = document.querySelector(`[data-review-name="${reviewName}"]`);
+            if (!reviewCard) return;
+
+            // Remove existing response card if any
+            const existingCard = reviewCard.querySelector('.response-generation-card');
+            if (existingCard) existingCard.remove();
+
+            // Create loading skeleton
+            const loadingCard = document.createElement('div');
+            loadingCard.className = 'response-generation-card response-skeleton';
+            loadingCard.innerHTML = `
+                <div class="skeleton-line" style="width: 30%;"></div>
+                <div class="skeleton-line" style="width: 20%; margin-bottom: 16px;"></div>
+                <div class="skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton-line" style="width: 95%;"></div>
+                <div class="skeleton-line" style="width: 90%;"></div>
+                <div class="skeleton-line" style="width: 25%; margin-top: 16px;"></div>
+            `;
+            reviewCard.appendChild(loadingCard);
+        }
+
+        function displayGeneratedResponse(reviewName, responseText, tone, length) {
+            const reviewCard = document.querySelector(`[data-review-name="${reviewName}"]`);
+            if (!reviewCard) return;
+
+            // Remove loading skeleton
+            const existingCard = reviewCard.querySelector('.response-generation-card');
+            if (existingCard) existingCard.remove();
+
+            // Create response card
+            const responseCard = document.createElement('div');
+            responseCard.className = 'response-generation-card';
+            responseCard.setAttribute('data-review-name', reviewName);
+            responseCard.innerHTML = `
+                <div class="tone-length-controls">
+                    <span class="tone-tag">Tone: ${tone}</span>
+                    <span class="length-tag">Length: ${length}</span>
+                </div>
+                <div class="control-group" style="margin-bottom: 1rem;">
+                    <div class="control-group">
+                        <label class="control-label">Tone:</label>
+                        <select class="control-select" id="tone-${reviewName}" onchange="updateToneLength('${reviewName}')">
+                            <option value="Professional" ${tone === 'Professional' ? 'selected' : ''}>Professional</option>
+                            <option value="Friendly" ${tone === 'Friendly' ? 'selected' : ''}>Friendly</option>
+                            <option value="Formal" ${tone === 'Formal' ? 'selected' : ''}>Formal</option>
+                            <option value="Casual" ${tone === 'Casual' ? 'selected' : ''}>Casual</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Length:</label>
+                        <select class="control-select" id="length-${reviewName}" onchange="updateToneLength('${reviewName}')">
+                            <option value="Short" ${length === 'Short' ? 'selected' : ''}>Short</option>
+                            <option value="Medium" ${length === 'Medium' ? 'selected' : ''}>Medium</option>
+                            <option value="Long" ${length === 'Long' ? 'selected' : ''}>Long</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="response-text" id="response-text-${reviewName}">${responseText}</div>
+                <div class="response-actions">
+                    <button class="response-btn response-btn-secondary" onclick="makeResponseEditable('${reviewName}')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Edit
+                    </button>
+                    <button class="response-btn response-btn-secondary" onclick="regenerateResponse('${reviewName}')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Regenerate Response
+                    </button>
+                    <button class="response-btn response-btn-primary" onclick="postReplyToGoogle('${reviewName}')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Post Reply
+                    </button>
+                </div>
+            `;
+            reviewCard.appendChild(responseCard);
+        }
+
+        function updateToneLength(reviewName) {
+            const toneSelect = document.getElementById(`tone-${reviewName}`);
+            const lengthSelect = document.getElementById(`length-${reviewName}`);
+
+            if (toneSelect && lengthSelect) {
+                const tone = toneSelect.value;
+                const length = lengthSelect.value;
+
+                // Update tags
+                const responseCard = document.querySelector(`.response-generation-card[data-review-name="${reviewName}"]`);
+                if (responseCard) {
+                    const toneTags = responseCard.querySelectorAll('.tone-tag, .length-tag');
+                    toneTags[0].textContent = `Tone: ${tone}`;
+                    toneTags[1].textContent = `Length: ${length}`;
+                }
+            }
+        }
+
+        function makeResponseEditable(reviewName) {
+            const responseTextDiv = document.getElementById(`response-text-${reviewName}`);
+            if (!responseTextDiv) return;
+
+            const currentText = responseTextDiv.textContent;
+            responseTextDiv.innerHTML = `<textarea class="response-text-editable" id="response-textarea-${reviewName}">${currentText}</textarea>`;
+
+            // Focus the textarea
+            const textarea = document.getElementById(`response-textarea-${reviewName}`);
+            if (textarea) textarea.focus();
+        }
+
+        function regenerateResponse(reviewName) {
+            const toneSelect = document.getElementById(`tone-${reviewName}`);
+            const lengthSelect = document.getElementById(`length-${reviewName}`);
+            const reviewData = window.reviewDataMap.get(reviewName);
+
+            if (!reviewData) return;
+
+            const tone = toneSelect ? toneSelect.value : 'Professional';
+            const length = lengthSelect ? lengthSelect.value : 'Short';
+
+            // Show loading state
+            showResponseLoadingState(reviewName);
+
+            // Get current location name
+            const locationSelect = document.getElementById('location-select');
+            const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
+
+            // Prepare webhook payload with updated tone/length
+            const payload = {
+                reviewText: reviewData.comment || '',
+                reviewerName: reviewData.reviewer.displayName,
+                starRating: reviewData.starRating,
+                businessLocation: businessLocation,
+                tone: tone,
+                length: length
+            };
+
+            // Call n8n webhook
+            fetch('https://prabhu9801.app.n8n.cloud/webhook-test/AI Response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const generatedText = data.response || data.text || data.message || 'No response generated';
+                    displayGeneratedResponse(reviewName, generatedText, tone, length);
+                })
+                .catch(error => {
+                    console.error('Error regenerating response:', error);
+                    showResponseError(reviewName, error.message);
+                });
+        }
+
+        function postReplyToGoogle(reviewName) {
+            const responseTextDiv = document.getElementById(`response-text-${reviewName}`);
+            const responseTextarea = document.getElementById(`response-textarea-${reviewName}`);
+
+            let replyText = '';
+            if (responseTextarea) {
+                replyText = responseTextarea.value;
+            } else if (responseTextDiv) {
+                replyText = responseTextDiv.textContent;
+            }
+
+            if (!replyText.trim()) {
+                alert('Please generate or enter a response first.');
+                return;
+            }
+
+            // Call the existing postReply function from google-signin.js
+            if (typeof window.postReply === 'function') {
+                window.postReply(reviewName, replyText);
+            } else {
+                alert('Post reply functionality is not available. Please ensure you are signed in.');
+            }
+        }
+
+        function showResponseError(reviewName, errorMessage) {
+            const reviewCard = document.querySelector(`[data-review-name="${reviewName}"]`);
+            if (!reviewCard) return;
+
+            // Remove loading skeleton
+            const existingCard = reviewCard.querySelector('.response-generation-card');
+            if (existingCard) existingCard.remove();
+
+            // Create error card
+            const errorCard = document.createElement('div');
+            errorCard.className = 'response-error';
+            errorCard.innerHTML = `
+                <div class="response-error-title">Failed to generate response</div>
+                <div>${errorMessage}</div>
+                <div style="margin-top: 1rem;">
+                    <button class="response-btn response-btn-secondary" onclick="generateResponse('${reviewName}')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Retry
+                    </button>
+                </div>
+            `;
+            reviewCard.appendChild(errorCard);
         }
     </script>
 </body>
