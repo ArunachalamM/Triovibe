@@ -743,6 +743,12 @@
             const reviewCard = document.querySelector(`[data-review-name="${reviewName}"]`);
             if (!reviewCard) return;
 
+            // Hide the initial 'Generate Response' button
+            const generateBtn = reviewCard.querySelector('.response-actions') || reviewCard.querySelector('.review-actions');
+            if (generateBtn) {
+                generateBtn.style.display = 'none';
+            }
+
             // Remove existing response card if any
             const existingCard = reviewCard.querySelector('.response-generation-card');
             if (existingCard) existingCard.remove();
@@ -774,10 +780,6 @@
             responseCard.className = 'response-generation-card';
             responseCard.setAttribute('data-review-name', reviewName);
             responseCard.innerHTML = `
-                <div class="tone-length-controls">
-                    <span class="tone-tag">Tone: ${tone}</span>
-                    <span class="length-tag">Length: ${length}</span>
-                </div>
                 <div class="control-group" style="margin-bottom: 1rem;">
                     <div class="control-group">
                         <label class="control-label">Tone:</label>
@@ -823,21 +825,11 @@
         }
 
         function updateToneLength(reviewName) {
-            const toneSelect = document.getElementById(`tone-${reviewName}`);
-            const lengthSelect = document.getElementById(`length-${reviewName}`);
-
-            if (toneSelect && lengthSelect) {
-                const tone = toneSelect.value;
-                const length = lengthSelect.value;
-
-                // Update tags
-                const responseCard = document.querySelector(`.response-generation-card[data-review-name="${reviewName}"]`);
-                if (responseCard) {
-                    const toneTags = responseCard.querySelectorAll('.tone-tag, .length-tag');
-                    toneTags[0].textContent = `Tone: ${tone}`;
-                    toneTags[1].textContent = `Length: ${length}`;
-                }
-            }
+            // Function functionality simplified as tags are removed.
+            // Keeping function skeleton if future logic needs it or removing it would break listeners (though listeners are inline).
+            // Actually, we can just leave it empty or minimal as the 'onchange' still calls it.
+            // Ideally we'd remove the onchange handler too, but user didn't ask to remove functionality, just the tags.
+            // We'll leave it empty to avoid errors.
         }
 
         function makeResponseEditable(reviewName) {
