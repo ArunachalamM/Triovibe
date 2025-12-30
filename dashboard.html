@@ -813,7 +813,7 @@
                         </svg>
                         Regenerate Response
                     </button>
-                    <button class="response-btn response-btn-primary" onclick="postReplyToGoogle('${reviewName}')">
+                    <button class="response-btn response-btn-primary" onclick="postReplyToGoogle(this, '${reviewName}')">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                         </svg>
@@ -915,7 +915,7 @@
                 });
         }
 
-        function postReplyToGoogle(reviewName) {
+        async function postReplyToGoogle(btnElement, reviewName) {
             const responseTextDiv = document.getElementById(`response-text-${reviewName}`);
             const responseTextarea = document.getElementById(`response-textarea-${reviewName}`);
 
@@ -931,11 +931,59 @@
                 return;
             }
 
-            // Call the existing postReply function from google-signin.js
-            if (typeof window.postReply === 'function') {
-                window.postReply(reviewName, replyText);
-            } else {
-                alert('Post reply functionality is not available. Please ensure you are signed in.');
+            // UI State: Disable button and show loading logic
+            const originalContent = btnElement.innerHTML;
+            btnElement.disabled = true;
+            btnElement.innerHTML = `Posting...`;
+
+            // Add a simple spinner if you like, or just text.
+            // Using inline SVG spinner for better UX
+            btnElement.innerHTML = `
+                <svg style="animation:spin 1s linear infinite; margin-right: 5px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="0.75"></path>
+                </svg>
+                Posting...
+            `;
+
+            // Inline style for spin animation if not globally defined
+            if (!document.getElementById('spin-style')) {
+                const style = document.createElement('style');
+                style.id = 'spin-style';
+                style.innerHTML = '@keyframes spin { 100% { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+
+            try {
+                // Call the existing postReply function from google-signin.js
+                if (typeof window.postReply === 'function') {
+                    await window.postReply(reviewName, replyText);
+
+                    // Success Feedback
+                    btnElement.innerHTML = `
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 5px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Posted
+                    `;
+                    btnElement.classList.remove('response-btn-primary');
+                    // Manually set green style as requested
+                    btnElement.style.backgroundColor = '#10B981';
+                    btnElement.style.borderColor = '#10B981';
+                    btnElement.style.color = 'white';
+
+                } else {
+                    throw new Error('Post reply functionality is not available. Please ensure you are signed in.');
+                }
+            } catch (error) {
+                console.error('Error posting reply:', error);
+
+                // Error Handling: Re-enable button
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalContent;
+
+                // Show error message
+                alert(`Google API Error: ${error.message || 'Please try again'}`);
             }
         }
 
