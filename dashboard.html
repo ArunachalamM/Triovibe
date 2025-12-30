@@ -379,6 +379,50 @@
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
+
+        .response-error-banner {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .response-error-banner-content {
+            flex: 1;
+        }
+
+        .response-error-banner-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .response-error-banner-message {
+            font-size: 0.8125rem;
+        }
+
+        .response-error-banner-close {
+            background: transparent;
+            border: none;
+            color: #991b1b;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .response-error-banner-close:hover {
+            background: rgba(153, 27, 27, 0.1);
+        }
     </style>
 </head>
 
@@ -636,6 +680,9 @@
         }
 
 
+        // Configuration
+        const AI_WEBHOOK_URL = 'https://prabhu9801.app.n8n.cloud/webhook/AI%20Response';
+
         // Store review data for response generation
         window.reviewDataMap = new Map();
 
@@ -664,7 +711,7 @@
             };
 
             // Call n8n webhook
-            fetch('https://prabhu9801.app.n8n.cloud/webhook-test/AI Response', {
+            fetch(AI_WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -684,7 +731,11 @@
                 })
                 .catch(error => {
                     console.error('Error generating response:', error);
-                    showResponseError(reviewName, error.message);
+                    let displayMessage = error.message;
+                    if (error.message === 'Failed to fetch' && AI_WEBHOOK_URL.includes('webhook-test')) {
+                        displayMessage += '. The n8n test webhook may have stopped listening. Please click "Execute Workflow" in n8n or use the production URL.';
+                    }
+                    showResponseError(reviewName, displayMessage);
                 });
         }
 
@@ -811,6 +862,10 @@
             const tone = toneSelect ? toneSelect.value : 'Professional';
             const length = lengthSelect ? lengthSelect.value : 'Short';
 
+            // Store current response text before regenerating
+            const responseTextDiv = document.getElementById(`response-text-${reviewName}`);
+            const currentResponseText = responseTextDiv ? responseTextDiv.textContent : '';
+
             // Show loading state
             showResponseLoadingState(reviewName);
 
@@ -828,8 +883,10 @@
                 length: length
             };
 
+            console.log('Regenerating response with payload:', payload);
+
             // Call n8n webhook
-            fetch('https://prabhu9801.app.n8n.cloud/webhook-test/AI Response', {
+            fetch(AI_WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -837,18 +894,32 @@
                 body: JSON.stringify(payload)
             })
                 .then(response => {
+                    console.log('Webhook response status:', response.status);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
+                    console.log('Webhook response data:', data);
                     const generatedText = data.reply || data.response || data.text || data.message || 'No response generated';
                     displayGeneratedResponse(reviewName, generatedText, tone, length);
                 })
                 .catch(error => {
                     console.error('Error regenerating response:', error);
-                    showResponseError(reviewName, error.message);
+                    console.error('Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        payload: payload
+                    });
+
+                    let displayMessage = error.message;
+                    if (error.message === 'Failed to fetch' && AI_WEBHOOK_URL.includes('webhook-test')) {
+                        displayMessage += '. The n8n test webhook may have stopped listening. Please click "Execute Workflow" in n8n or use the production URL.';
+                    }
+
+                    // Restore previous response and show error banner
+                    showRegenerateError(reviewName, displayMessage, currentResponseText, tone, length);
                 });
         }
 
@@ -884,10 +955,20 @@
             const existingCard = reviewCard.querySelector('.response-generation-card');
             if (existingCard) existingCard.remove();
 
+            // Remove any existing error cards to prevent stacking
+            const existingErrorCards = reviewCard.querySelectorAll('.response-error');
+            existingErrorCards.forEach(card => card.remove());
+
             // Create error card
             const errorCard = document.createElement('div');
             errorCard.className = 'response-error';
+            errorCard.style.position = 'relative';
             errorCard.innerHTML = `
+                <button class="response-error-banner-close" onclick="this.parentElement.remove()" title="Dismiss" style="position: absolute; top: 0.75rem; right: 0.75rem;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
                 <div class="response-error-title">Failed to generate response</div>
                 <div>${errorMessage}</div>
                 <div style="margin-top: 1rem;">
@@ -900,6 +981,43 @@
                 </div>
             `;
             reviewCard.appendChild(errorCard);
+        }
+
+        function showRegenerateError(reviewName, errorMessage, previousResponseText, tone, length) {
+            const reviewCard = document.querySelector(`[data-review-name="${reviewName}"]`);
+            if (!reviewCard) return;
+
+            // Remove loading skeleton
+            const existingCard = reviewCard.querySelector('.response-generation-card');
+            if (existingCard) existingCard.remove();
+
+            // Restore the response card with previous text
+            displayGeneratedResponse(reviewName, previousResponseText, tone, length);
+
+            // Add error banner at the top of the response card
+            const responseCard = reviewCard.querySelector('.response-generation-card');
+            if (responseCard) {
+                // Remove any existing error banners to prevent stacking
+                const existingErrorBanner = responseCard.querySelector('.response-error-banner');
+                if (existingErrorBanner) {
+                    existingErrorBanner.remove();
+                }
+
+                const errorBanner = document.createElement('div');
+                errorBanner.className = 'response-error-banner';
+                errorBanner.innerHTML = `
+                    <div class="response-error-banner-content">
+                        <div class="response-error-banner-title">Failed to regenerate response</div>
+                        <div class="response-error-banner-message">${errorMessage}. Showing previous response.</div>
+                    </div>
+                    <button class="response-error-banner-close" onclick="this.parentElement.remove()" title="Dismiss">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                `;
+                responseCard.insertBefore(errorBanner, responseCard.firstChild);
+            }
         }
     </script>
 </body>
