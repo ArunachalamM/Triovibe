@@ -681,62 +681,169 @@
 
 
         // Configuration
-        const AI_WEBHOOK_URL = 'https://prabhu9801.app.n8n.cloud/webhook/AI%20Response';
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTH95eougkvDEvu3an-qgVp3Al7ljNK7JcIkWcFr9wBmTAuXAtxZBhSBIEoPJIHw185W2D7KnEQXWV-/pub?output=csv';
+
+        // Retrieve API Key from Local Storage or Prompt User
+        let OPENAI_API_KEY = localStorage.getItem('openai_api_key_v1');
+        if (!OPENAI_API_KEY || OPENAI_API_KEY.startsWith('sk-proj-7KbLk')) {
+            // prompt logic is handled in getApiKey() to avoid blocking load
+            console.log('API Key not found or needs update.');
+        }
+
+        function getApiKey() {
+            let key = localStorage.getItem('openai_api_key_v1');
+            if (!key) {
+                key = prompt("Please enter your OpenAI API Key (starts with sk-...):");
+                if (key) {
+                    localStorage.setItem('openai_api_key_v1', key.trim());
+                    return key.trim();
+                } else {
+                    alert("API Key is required for AI features to work.");
+                    return null;
+                }
+            }
+            return key;
+        }
 
         // Store review data for response generation
         window.reviewDataMap = new Map();
 
-        function generateResponse(reviewName) {
-            const reviewData = window.reviewDataMap.get(reviewName);
-            if (!reviewData) {
-                console.error('Review data not found for:', reviewName);
-                return;
-            }
+        // Helper to parse CSV securely
+        function parseCSV(text) {
+            // Simple parser handling quoted fields
+            const rows = [];
+            let currentRow = [];
+            let currentField = '';
+            let inQuotes = false;
 
-            // Show loading state
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    currentRow.push(currentField.trim());
+                    currentField = '';
+                } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                    if (currentField || currentRow.length > 0) currentRow.push(currentField.trim());
+                    if (currentRow.length > 0) rows.push(currentRow);
+                    currentRow = [];
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            if (currentField || currentRow.length > 0) currentRow.push(currentField.trim());
+            if (currentRow.length > 0) rows.push(currentRow);
+            return rows;
+        }
+
+        async function getSystemPrompt(locationName) {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const text = await response.text();
+                const rows = parseCSV(text);
+
+                let specificPrompt = '';
+                let defaultPrompt = 'You are a professional customer service representative.'; // Fallback
+
+                // Start from index 1 to skip headers
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.length < 2) continue;
+
+                    const rowLoc = row[0];
+                    const rowPrompt = row[1]; // Removed replace quotes logic as parseCSV handles it
+
+                    if (rowLoc === 'Default') {
+                        defaultPrompt = rowPrompt;
+                    }
+                    if (locationName && locationName.includes(rowLoc) && rowLoc !== 'Default') {
+                        specificPrompt = rowPrompt;
+                    }
+                }
+                return specificPrompt || defaultPrompt;
+            } catch (error) {
+                console.error('Error fetching prompts:', error);
+                return 'You are a professional customer service representative.';
+            }
+        }
+
+        async function callOpenAI(prompt) {
+            const apiKey = getApiKey();
+            if (!apiKey) throw new Error("Missing API Key. Please enter it when prompted.");
+
+            const models = ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
+            let lastError = null;
+
+            for (const model of models) {
+                try {
+                    const url = 'https://api.openai.com/v1/chat/completions';
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{ role: 'user', content: prompt }],
+                            temperature: 0.7
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) throw new Error(data.error.message);
+                    if (!data.choices || !data.choices[0]) throw new Error('No choices returned');
+
+                    return data.choices[0].message.content.trim();
+                } catch (e) {
+                    console.warn(`Failed with ${model}:`, e);
+                    lastError = e;
+                }
+            }
+            throw lastError;
+        }
+
+        async function generateResponse(reviewName) {
+            const reviewData = window.reviewDataMap.get(reviewName);
+            if (!reviewData) return;
+
             showResponseLoadingState(reviewName);
 
-            // Get current location name (from dropdown or stored)
-            const locationSelect = document.getElementById('location-select');
-            const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
+            try {
+                const locationSelect = document.getElementById('location-select');
+                const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
 
-            // Prepare webhook payload
-            const payload = {
-                reviewText: reviewData.comment || '',
-                reviewerName: reviewData.reviewer.displayName,
-                starRating: reviewData.starRating,
-                businessLocation: businessLocation,
-                tone: 'Professional', // Default
-                length: 'Short' // Default
-            };
+                // 1. Get Prompt from Sheet
+                const systemPrompt = await getSystemPrompt(businessLocation);
 
-            // Call n8n webhook
-            fetch(AI_WEBHOOK_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Display generated response
-                    const generatedText = data.reply || data.response || data.text || data.message || 'No response generated';
-                    displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Short');
-                })
-                .catch(error => {
-                    console.error('Error generating response:', error);
-                    let displayMessage = error.message;
-                    if (error.message === 'Failed to fetch' && AI_WEBHOOK_URL.includes('webhook-test')) {
-                        displayMessage += '. The n8n test webhook may have stopped listening. Please click "Execute Workflow" in n8n or use the production URL.';
-                    }
-                    showResponseError(reviewName, displayMessage);
-                });
+                // 2. Construct Full Prompt
+                const fullPrompt = `
+${systemPrompt}
+
+TASK: Write a reply to this customer review.
+
+DETAILS:
+- Customer Name: ${reviewData.reviewer.displayName}
+- Review: "${reviewData.comment || ''}"
+- Star Rating: ${reviewData.starRating}/5
+- Tone: Professional
+- Length: Short
+
+OUTPUT: Only the reply text.
+`;
+
+                // 3. Call OpenAI
+                const generatedText = await callOpenAI(fullPrompt);
+
+                displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Short');
+
+            } catch (error) {
+                console.error('Generation Error:', error);
+                showResponseError(reviewName, `AI Error: ${error.message}`);
+            }
         }
 
         function showResponseLoadingState(reviewName) {
@@ -793,9 +900,10 @@
                     <div class="control-group">
                         <label class="control-label">Length:</label>
                         <select class="control-select" id="length-${reviewName}" onchange="updateToneLength('${reviewName}')">
+                            <option value="Very short" ${length === 'Very short' ? 'selected' : ''}>Very short</option>
                             <option value="Short" ${length === 'Short' ? 'selected' : ''}>Short</option>
                             <option value="Medium" ${length === 'Medium' ? 'selected' : ''}>Medium</option>
-                            <option value="Long" ${length === 'Long' ? 'selected' : ''}>Long</option>
+                            <option value="Detailed" ${length === 'Detailed' ? 'selected' : ''}>Detailed</option>
                         </select>
                     </div>
                 </div>
@@ -844,7 +952,7 @@
             if (textarea) textarea.focus();
         }
 
-        function regenerateResponse(reviewName) {
+        async function regenerateResponse(reviewName) {
             const toneSelect = document.getElementById(`tone-${reviewName}`);
             const lengthSelect = document.getElementById(`length-${reviewName}`);
             const reviewData = window.reviewDataMap.get(reviewName);
@@ -861,58 +969,39 @@
             // Show loading state
             showResponseLoadingState(reviewName);
 
-            // Get current location name
-            const locationSelect = document.getElementById('location-select');
-            const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
+            try {
+                // Get current location name
+                const locationSelect = document.getElementById('location-select');
+                const businessLocation = locationSelect ? locationSelect.options[locationSelect.selectedIndex]?.text : 'Unknown Location';
 
-            // Prepare webhook payload with updated tone/length
-            const payload = {
-                reviewText: reviewData.comment || '',
-                reviewerName: reviewData.reviewer.displayName,
-                starRating: reviewData.starRating,
-                businessLocation: businessLocation,
-                tone: tone,
-                length: length
-            };
+                // 1. Get Prompt from Sheet
+                const systemPrompt = await getSystemPrompt(businessLocation);
 
-            console.log('Regenerating response with payload:', payload);
+                // 2. Construct Full Prompt
+                const fullPrompt = `
+${systemPrompt}
 
-            // Call n8n webhook
-            fetch(AI_WEBHOOK_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-                .then(response => {
-                    console.log('Webhook response status:', response.status);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Webhook response data:', data);
-                    const generatedText = data.reply || data.response || data.text || data.message || 'No response generated';
-                    displayGeneratedResponse(reviewName, generatedText, tone, length);
-                })
-                .catch(error => {
-                    console.error('Error regenerating response:', error);
-                    console.error('Error details:', {
-                        message: error.message,
-                        stack: error.stack,
-                        payload: payload
-                    });
+TASK: Write a reply to this customer review.
 
-                    let displayMessage = error.message;
-                    if (error.message === 'Failed to fetch' && AI_WEBHOOK_URL.includes('webhook-test')) {
-                        displayMessage += '. The n8n test webhook may have stopped listening. Please click "Execute Workflow" in n8n or use the production URL.';
-                    }
+DETAILS:
+- Customer Name: ${reviewData.reviewer.displayName}
+- Review: "${reviewData.comment || ''}"
+- Star Rating: ${reviewData.starRating}/5
+- Tone: ${tone}
+- Length: ${length}
 
-                    // Restore previous response and show error banner
-                    showRegenerateError(reviewName, displayMessage, currentResponseText, tone, length);
-                });
+OUTPUT: Only the reply text.
+`;
+
+                // 3. Call OpenAI
+                const generatedText = await callOpenAI(fullPrompt);
+
+                displayGeneratedResponse(reviewName, generatedText, tone, length);
+
+            } catch (error) {
+                console.error('Error regenerating response:', error);
+                showRegenerateError(reviewName, error.message, currentResponseText, tone, length);
+            }
         }
 
         async function postReplyToGoogle(btnElement, reviewName) {
