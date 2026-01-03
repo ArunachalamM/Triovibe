@@ -56,9 +56,29 @@ ReviewFlow transforms how businesses handle customer feedback:
 
 ## 🏁 Getting Started
 
-1. Clone or download this repository
-2. Open `index.html` in your web browser
-3. That's it! No build process required.
+This project consists of static files (HTML, CSS, JS). While you can simply open `index.html` in your browser, running a local server is recommended to ensure all features (like `fetch` requests) work correctly.
+
+### Option 1: Using Python (Recommended)
+Calculated to be the easiest since you have Python installed.
+
+1. Open your terminal in the project directory
+2. Run this command:
+   ```bash
+   python -m http.server
+   # or for Python 2
+   python -m SimpleHTTPServer
+   ```
+3. Open http://localhost:8000
+
+### Option 2: Using Node.js
+1. Run the standard static server via npx:
+   ```bash
+   npx http-server
+   ```
+2. Open the URL shown (usually http://localhost:8080)
+
+### Option 3: Direct Link
+Simply double-click `index.html`. Note that some browser security restrictions may block certain features.
 
 ## 📁 File Structure
 
@@ -155,3 +175,4 @@ This project is created for TrioVibe. Feel free to customize it for your own use
 ---
 
 **Built with ❤️ by TrioVibe**
+Test Commit by Arunachalam
