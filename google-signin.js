@@ -137,7 +137,14 @@ async function fetchLocations(accountName) {
 async function fetchReviews(locationName) {
     showReviewsLoading(true);
     const reviewsContainer = document.getElementById('reviews-container');
+    const statsSection = document.getElementById('dashboard-stats-section');
+    const statsSkeleton = document.getElementById('stats-skeleton');
+    const statsContent = document.getElementById('stats-content');
+
     if (reviewsContainer) reviewsContainer.style.display = 'block';
+    if (statsSection) statsSection.style.display = 'block';
+    if (statsSkeleton) statsSkeleton.style.display = 'flex';
+    if (statsContent) statsContent.style.display = 'none';
 
     try {
         let resourceName = locationName;
@@ -146,27 +153,53 @@ async function fetchReviews(locationName) {
         }
         console.log(`Fetching reviews for: ${resourceName}`);
 
-        const response = await fetch(`https://mybusiness.googleapis.com/v4/${resourceName}/reviews?pageSize=20`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
+        // Fetch all reviews
+        let allReviews = [];
+        let nextPageToken = null;
+        let pageCount = 0;
+        // Limit to 5 pages (approx 250 reviews) to prevent infinite loops or long waits during demo
+        const MAX_PAGES = 5;
+
+        do {
+            let url = `https://mybusiness.googleapis.com/v4/${resourceName}/reviews?pageSize=50`;
+            if (nextPageToken) {
+                url += `&pageToken=${nextPageToken}`;
             }
-        });
 
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error('Reviews API Error details:', errText);
-            throw new Error(`Reviews API Error: ${response.statusText}`);
-        }
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        const data = await response.json();
-        displayReviews(data.reviews || []);
+            if (!response.ok) {
+                const errText = await response.text();
+                // If it's 404/400 maybe no reviews yet
+                if (response.status === 404) break;
+                throw new Error(`Reviews API Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.reviews) {
+                allReviews = allReviews.concat(data.reviews);
+            }
+
+            nextPageToken = data.nextPageToken;
+            pageCount++;
+        } while (nextPageToken && pageCount < MAX_PAGES);
+
+        displayReviews(allReviews);
+        updateDashboardStats(allReviews);
+
     } catch (error) {
         console.error('Error fetching reviews:', error);
         const list = document.getElementById('reviews-list');
         if (list) list.innerHTML = `<div class="rf-error-message">Error fetching reviews: ${error.message}</div>`;
     } finally {
         showReviewsLoading(false);
+        if (statsSkeleton) statsSkeleton.style.display = 'none';
+        if (statsContent) statsContent.style.display = 'flex';
     }
 }
 
@@ -186,6 +219,170 @@ function displayReviews(reviews) {
     } else {
         console.error('displayFilteredReviews function not available');
     }
+}
+
+function updateDashboardStats(reviews) {
+    if (!reviews || reviews.length === 0) {
+        // Handle empty state
+        const totalReviewsEl = document.getElementById('total-reviews-count');
+        if (totalReviewsEl) totalReviewsEl.textContent = '0';
+
+        const avgRatingEl = document.getElementById('average-rating-value');
+        if (avgRatingEl) avgRatingEl.textContent = '0.0/5';
+
+        const responseRateEl = document.getElementById('response-rate-value');
+        if (responseRateEl) responseRateEl.textContent = '0%';
+
+        return;
+    }
+
+    // 1. Calculate Overview Metrics
+    const totalReviews = reviews.length;
+    let totalScore = 0;
+    let repliedCount = 0;
+    const ratingCounts = { 'FIVE': 0, 'FOUR': 0, 'THREE': 0, 'TWO': 0, 'ONE': 0 };
+    const ratingMap = { 'FIVE': 5, 'FOUR': 4, 'THREE': 3, 'TWO': 2, 'ONE': 1 };
+
+    reviews.forEach(r => {
+        const score = ratingMap[r.starRating] || 0;
+        totalScore += score;
+        if (r.starRating) ratingCounts[r.starRating] = (ratingCounts[r.starRating] || 0) + 1;
+        if (r.reviewReply) repliedCount++;
+    });
+
+    const avgRating = (totalScore / totalReviews).toFixed(1);
+    const responseRate = Math.round((repliedCount / totalReviews) * 100);
+
+    // Update Overview UI
+    const totalReviewsEl = document.getElementById('total-reviews-count');
+    if (totalReviewsEl) totalReviewsEl.textContent = totalReviews;
+
+    const avgRatingEl = document.getElementById('average-rating-value');
+    if (avgRatingEl) avgRatingEl.textContent = `${avgRating}/5`;
+
+    const responseRateEl = document.getElementById('response-rate-value');
+    if (responseRateEl) responseRateEl.textContent = `${responseRate}%`;
+
+    const repliedCountEl = document.getElementById('replied-count');
+    if (repliedCountEl) repliedCountEl.textContent = repliedCount;
+
+    // Update Stars
+    const starContainer = document.getElementById('average-rating-stars');
+    if (starContainer) {
+        let starsHtml = '';
+        const roundedRating = Math.round(avgRating);
+        for (let i = 0; i < 5; i++) {
+            const color = i < roundedRating ? '#fbbf24' : '#e5e7eb';
+            starsHtml += `<svg width="24" height="24" fill="${color}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+        }
+        starContainer.innerHTML = starsHtml;
+    }
+
+    // Update Breakdown
+    const breakdownContainer = document.getElementById('rating-breakdown');
+    if (breakdownContainer) {
+        breakdownContainer.innerHTML = '';
+        ['FIVE', 'FOUR', 'THREE', 'TWO', 'ONE'].forEach((key, index) => {
+            const count = ratingCounts[key];
+            const percent = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+            const starLabel = 5 - index;
+
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.gap = '0.5rem';
+            item.style.marginBottom = '0.25rem';
+
+            item.innerHTML = `
+                <div style="width: 12px; font-weight: 600;">${starLabel}</div>
+                <div style="flex: 1; height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden;">
+                    <div style="width: ${percent}%; height: 100%; background: #fbbf24; border-radius: 3px;"></div>
+                </div>
+                <div style="width: 20px; text-align: right; color: #6b7280;">${count}</div>
+            `;
+            breakdownContainer.appendChild(item);
+        });
+    }
+
+    // 2. Render Growth Chart
+    renderGrowthChart(reviews);
+}
+
+function renderGrowthChart(reviews) {
+    const ctx = document.getElementById('reviewsGrowthChart');
+    if (!ctx) return;
+
+    // Group reviews by Month (Last 6 months + Current)
+    const months = {};
+    const today = new Date();
+
+    // Initialize last 6 months with 0
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+        months[key] = 0;
+    }
+
+    reviews.forEach(r => {
+        const d = new Date(r.createTime); // createTime is ISO string
+        const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+        if (months.hasOwnProperty(key)) {
+            months[key]++;
+        }
+    });
+
+    const labels = Object.keys(months);
+    const dataPoints = Object.values(months);
+
+    // Destroy existing chart if any (global check not shown, assuming fresh render or window property)
+    if (window.growthChart instanceof Chart) {
+        window.growthChart.destroy();
+    }
+
+    window.growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'New Reviews',
+                data: dataPoints,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3b82f6',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: '#f3f4f6'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 }
 
 async function handleReplySubmit(btn, reviewName) {

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ReviewFlow | TrioVibe</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -497,6 +498,115 @@
             </div>
         </div>
 
+        <!-- NEW: Dashboard Stats Section -->
+        <div id="dashboard-stats-section" style="display: none; margin-top: 2rem; margin-bottom: 2rem;">
+            <div class="stats-card" style="
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                padding: 2rem;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            ">
+
+                <!-- Skeleton Loader for Stats -->
+                <div id="stats-skeleton" style="display: flex; gap: 2rem; width: 100%;">
+                    <div style="flex: 1;">
+                        <div class="skeleton-line" style="width: 40%; height: 24px; margin-bottom: 20px;"></div>
+                        <div class="skeleton-line" style="width: 30%; height: 36px; margin-bottom: 15px;"></div>
+                        <div class="skeleton-line" style="width: 50%; height: 16px;"></div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div class="skeleton-line" style="width: 100%; height: 200px;"></div>
+                    </div>
+                </div>
+
+                <!-- Actual Content -->
+                <div id="stats-content" style="display: none; flex-wrap: wrap; gap: 3rem;">
+
+                    <!-- Left: Reputation Overview -->
+                    <div class="reputation-overview" style="flex: 1; min-width: 300px;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #111827;">
+                            Reputation Overview</h3>
+
+                        <div
+                            style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem;">
+                            <div>
+                                <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Total Google
+                                    Reviews</div>
+                                <div id="total-reviews-count"
+                                    style="font-size: 2.25rem; font-weight: 700; color: #111827;">0</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <!-- Google Icon -->
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                        fill="#4285F4" />
+                                    <path
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                        fill="#34A853" />
+                                    <path
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z"
+                                        fill="#FBBC05" />
+                                    <path
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                        fill="#EA4335" />
+                                </svg>
+                                <!-- Map Icon or similar if needed, sticking to Google G for now as per image -->
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Current Google
+                                Rating</div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div id="average-rating-value"
+                                    style="font-size: 2.25rem; font-weight: 700; color: #111827;">0.0/5</div>
+                                <div id="average-rating-stars" class="review-stars" style="display: flex;">
+                                    <!-- Stars injected via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating Breakdown Bars -->
+                        <div id="rating-breakdown" style="font-size: 0.75rem; margin-bottom: 2rem;">
+                            <!-- Dynamic Breakdown -->
+                        </div>
+
+                        <div>
+                            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">Response Rate
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div id="response-rate-value"
+                                    style="font-size: 1.5rem; font-weight: 700; color: #111827;">0%</div>
+                                <div style="font-size: 0.875rem; color: #6b7280;">(<span id="replied-count">0</span>
+                                    replied)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Growth Chart -->
+                    <div class="reviews-growth" style="flex: 2; min-width: 400px; position: relative;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin: 0;">Reviews Growth
+                            </h3>
+                            <span title="New reviews over time" style="cursor: pointer; color: #9ca3af;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M12 16v-4M12 8h.01" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="reviewsGrowthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Reviews Section (Initially Hidden) -->
         <div id="reviews-container" class="reviews-section" style="display: none; margin-top: 3rem;">
 
@@ -683,27 +793,7 @@
         // Configuration
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTH95eougkvDEvu3an-qgVp3Al7ljNK7JcIkWcFr9wBmTAuXAtxZBhSBIEoPJIHw185W2D7KnEQXWV-/pub?output=csv';
 
-        // Retrieve API Key from Local Storage or Prompt User
-        let OPENAI_API_KEY = localStorage.getItem('openai_api_key_v1');
-        if (!OPENAI_API_KEY || OPENAI_API_KEY.startsWith('sk-proj-7KbLk')) {
-            // prompt logic is handled in getApiKey() to avoid blocking load
-            console.log('API Key not found or needs update.');
-        }
 
-        function getApiKey() {
-            let key = localStorage.getItem('openai_api_key_v1');
-            if (!key) {
-                key = prompt("Please enter your OpenAI API Key (starts with sk-...):");
-                if (key) {
-                    localStorage.setItem('openai_api_key_v1', key.trim());
-                    return key.trim();
-                } else {
-                    alert("API Key is required for AI features to work.");
-                    return null;
-                }
-            }
-            return key;
-        }
 
         // Store review data for response generation
         window.reviewDataMap = new Map();
@@ -769,41 +859,29 @@
         }
 
         async function callOpenAI(prompt) {
-            const apiKey = getApiKey();
-            if (!apiKey) throw new Error("Missing API Key. Please enter it when prompted.");
+            try {
+                // Call our serverless function instead of OpenAI directly
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+                });
 
-            const models = ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
-            let lastError = null;
+                const data = await response.json();
 
-            for (const model of models) {
-                try {
-                    const url = 'https://api.openai.com/v1/chat/completions';
-
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{ role: 'user', content: prompt }],
-                            temperature: 0.7
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.error) throw new Error(data.error.message);
-                    if (!data.choices || !data.choices[0]) throw new Error('No choices returned');
-
-                    return data.choices[0].message.content.trim();
-                } catch (e) {
-                    console.warn(`Failed with ${model}:`, e);
-                    lastError = e;
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to generate response');
                 }
+
+                return data.response;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
             }
-            throw lastError;
         }
 
         async function generateResponse(reviewName) {
