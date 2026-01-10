@@ -897,7 +897,7 @@ DETAILS:
 - Review: "${reviewData.comment || ''}"
 - Star Rating: ${reviewData.starRating}/5
 - Tone: Professional
-- Length: Short
+- Length: Very short
 
 OUTPUT: Only the reply text.
 `;
@@ -905,7 +905,7 @@ OUTPUT: Only the reply text.
                 // 3. Call OpenAI
                 const generatedText = await callOpenAI(fullPrompt);
 
-                displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Short');
+                displayGeneratedResponse(reviewName, generatedText, 'Professional', 'Very short');
 
             } catch (error) {
                 console.error('Generation Error:', error);
